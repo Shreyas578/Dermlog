@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  scans   Scan[]
+  events  Event[]
+  reports Report[]
+}
+
+model Scan {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imagePath  String
+  redness    Float
+  texture    Float
+  acneCount  Int
+  hydration  Float
+  darkSpots  Float
+  createdAt  DateTime @default(now())
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String
+  note      String
+  eventDate DateTime
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  summaryText    String
+  flaggedMetrics String // Stored as JSON string (e.g. '["redness trend", "breakout cluster"]')
+  dateRangeStart DateTime
+  dateRangeEnd   DateTime
+  createdAt      DateTime @default(now())
+}
