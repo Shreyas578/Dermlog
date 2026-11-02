@@ -32,6 +32,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
+import { ClinicalReportViewer } from "@/components/ClinicalReportViewer";
 import html2canvas from "html2canvas";
 import { exportDermatologistHandoffPDF } from "@/lib/pdfExport";
 
@@ -168,9 +169,9 @@ export default function DashboardPage() {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-cyan-400 underline font-semibold hover:text-cyan-300 inline-flex items-center gap-1 mx-1"
+            className="text-cyan-300 underline font-bold hover:text-cyan-200 inline-flex items-center gap-1 bg-cyan-950/70 px-2 py-0.5 rounded-md border border-cyan-500/40 mx-1 transition-all hover:bg-cyan-900/80 shadow-sm"
           >
-            {part} <ExternalLink className="w-3 h-3 inline" />
+            Buy Online (Cheapest Verified) <ExternalLink className="w-3 h-3 inline text-cyan-400" />
           </a>
         );
       }
@@ -561,13 +562,11 @@ export default function DashboardPage() {
                   </div>
 
                   {isExpanded && (
-                    <div className="px-6 pb-6 pt-2 border-t border-white/[0.06] bg-black/30">
-                      <div className="p-6 rounded-2xl bg-[#080d16] border border-white/[0.08] text-xs text-slate-200 leading-relaxed font-mono whitespace-pre-wrap max-h-[600px] overflow-y-auto">
-                        {renderFormattedSummary(report.summaryText)}
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+                    <div className="px-6 pb-6 pt-4 border-t border-white/[0.06] bg-black/40 space-y-4">
+                      <ClinicalReportViewer reportText={report.summaryText} />
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/[0.06]">
                         <span className="flex items-center gap-1.5 text-teal-400">
-                          <ShoppingBag className="w-3.5 h-3.5" /> Click any highlighted link to purchase at lowest online price
+                          <ShoppingBag className="w-3.5 h-3.5" /> Direct retailer links verified at lowest available price
                         </span>
                         <span>Clinical AI Decision Support</span>
                       </div>

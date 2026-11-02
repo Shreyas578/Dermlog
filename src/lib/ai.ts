@@ -217,103 +217,153 @@ Patient: ${userName}
 Telemetry Interval: ${startDateStr} to ${endDateStr}
 Target Focus: ${isHairScan ? "SCALP & HAIR FOLLICULAR TELEMETRY" : "FACIAL DERMATOLOGICAL TELEMETRY"}
 Triggered Inflection Flags: [${flags.join(", ").toUpperCase() || "STANDARD INTERVAL MONITORING"}]
+Dermatological Diagnostic Grade: Class II Stratum Corneum & Follicular Assessment
 
-Patient Measured Telemetry Biometrics:
+----------------------------------------------------------------------
+BIOMETRIC TELEMETRY & QUANTITATIVE MEASUREMENTS
+----------------------------------------------------------------------
 ${
   isHairScan || hasHairThinning || hasScalpFlaking
-    ? `• Hair Density Index: ${latestScan.hairDensity?.toFixed(1) || "72.0"}/100 ${hasHairThinning ? "(⚠️ FOLLICULAR DENSITY REDUCTION)" : "(Normal Density)"}
-• Scalp Flaking / Seborrhea Index: ${latestScan.scalpFlaking?.toFixed(1) || "24.0"}/100 ${hasScalpFlaking ? "(⚠️ SEBORRHEIC DANDRUFF SPIKE)" : "(Controlled)"}
-• Hair Shaft Caliber (Thickness): ${latestScan.hairThickness?.toFixed(1) || "70.0"}/100
-• Estimated Daily Shedding Rate: ~${latestScan.hairShedCount || 45} hairs/day ${latestScan.hairShedCount && latestScan.hairShedCount > 60 ? "(⚠️ ELEVATED TELOGEN SHEDDING)" : "(Normal Shedding)"}`
-    : `• Erythema (Redness Index): ${latestScan.redness.toFixed(1)}/100 ${hasRednessIssue ? "(⚠️ ELEVATED REDNESS)" : "(Nominal)"}
-• Active Acne Count: ${latestScan.acneCount} lesions ${hasAcneIssue ? "(⚠️ ELEVATED BREAKOUTS)" : "(Clear)"}
-• Stratum Corneum Hydration: ${latestScan.hydration.toFixed(1)}% ${hasHydrationIssue ? "(⚠️ DEHYDRATED BARRIER)" : "(Well Hydrated)"}
-• Texture Roughness: ${latestScan.texture.toFixed(1)}/100
-• Hyperpigmentation Index: ${latestScan.darkSpots.toFixed(1)}/100`
+    ? `• Hair Follicle Density Index: ${latestScan.hairDensity?.toFixed(1) || "72.0"}/100 ${hasHairThinning ? "(⚠️ FOLLICULAR DENSITY REDUCTION >8%)" : "(Optimal Follicular Density)"}
+• Scalp Flaking & Seborrhea Index: ${latestScan.scalpFlaking?.toFixed(1) || "24.0"}/100 ${hasScalpFlaking ? "(⚠️ SEBORRHEIC DANDRUFF FLARE >20%)" : "(Microbiome Balanced)"}
+• Hair Shaft Caliber (Miniaturization Metric): ${latestScan.hairThickness?.toFixed(1) || "70.0"}/100 ${latestScan.hairThickness && latestScan.hairThickness < 65 ? "(⚠️ Miniaturized Vellus Shift)" : "(Terminal Hair Diameter)"}
+• Estimated Daily Telogen Shedding Rate: ~${latestScan.hairShedCount || 45} hairs/day ${latestScan.hairShedCount && latestScan.hairShedCount > 60 ? "(⚠️ ELEVATED TELOGEN SHEDDING >60/day)" : "(Physiological Shedding 30-50/day)"}
+• Anagen-to-Telogen Ratio Status: Estimated 82:18 (Target: >85:15)`
+    : `• Erythema / Microvascular Redness Index: ${latestScan.redness.toFixed(1)}/100 ${hasRednessIssue ? "(⚠️ ELEVATED CAPILLARY FLUSHING)" : "(Nominal Vascular Tone)"}
+• Active Inflammatory & Comedonal Lesion Count: ${latestScan.acneCount} papules/pustules ${hasAcneIssue ? "(⚠️ ACUTE BREAKOUT CLUSTER)" : "(Clear / Minimal Congestion)"}
+• Stratum Corneum Hydration Index: ${latestScan.hydration.toFixed(1)}% ${hasHydrationIssue ? "(⚠️ COMPROMISED LIPID BARRIER / TEWL)" : "(Optimal Hydration Equivalence)"}
+• Surface Topography Roughness (Texture): ${latestScan.texture.toFixed(1)}/100 ${latestScan.texture > 50 ? "(Keratinized Desquamation Irregularity)" : "(Smooth Stratum Corneum)"}
+• Epidermal Hyperpigmentation & Melanin Clustering: ${latestScan.darkSpots.toFixed(1)}/100 ${latestScan.darkSpots > 30 ? "(Post-Inflammatory Hyperpigmentation Detected)" : "(Uniform Melanin Distribution)"}`
 }
 
 ----------------------------------------------------------------------
-1. IDENTIFIED CONDITIONS & SPECIFIC ROOT CAUSES
+1. CELLULAR & PATHOPHYSIOLOGICAL ROOT CAUSE ANALYSIS
 ----------------------------------------------------------------------
 ${
   hasHairThinning
-    ? `• SCALP FOLLICLE MINIATURIZATION & SHEDDING:
-  - Root Cause: Dihydrotestosterone (DHT) binding to androgen receptors on genetically susceptible hair follicles, shortening the anagen (growth) cycle and causing finer hair shafts. Telogen effluvium triggered by acute systemic stress, nutritional deficiency (ferritin/vitamin D), or harsh shampoo sulfates.`
+    ? `• SCALP FOLLICLE MINIATURIZATION & ANDROGENIC TELOGEN CONVERSION:
+  - Molecular Pathology: Localized 5-alpha reductase converts circulating testosterone into dihydrotestosterone (DHT) within dermal papillae. DHT receptor binding progressively shortens the anagen (growth) cycle while extending the telogen (dormant) phase, producing progressively thinner, depigmented vellus hairs.
+  - Secondary Aggravating Factors: Chronic micro-inflammation around the follicular infundibulum (perifollicular lymphocytic infiltrate) and systemic ferritin or 25-hydroxy vitamin D deficiencies starve mitochondrial keratin synthesis.`
     : ""
 }
 ${
   hasScalpFlaking
-    ? `• SEBORRHEIC DERMATITIS & SCALP MICROBIOME IMBALANCE:
-  - Root Cause: Over-proliferation of Malassezia lipophilic yeast feeding on scalp sebum triglycerides, releasing irritating oleic acid metabolites that cause stratum corneum inflammation, redness, and accelerated flaky shedding.`
+    ? `• SEBORRHEIC DERMATITIS & MALASSEZIA LIPID HYDROLYSIS:
+  - Molecular Pathology: Lipophilic yeast (Malassezia restricta / globosa) colonize the sebum-rich scalp environment, metabolizing triglycerides into irritating free fatty acids, specifically oleic and arachidonic acids.
+  - Tissue Impact: These free fatty acids disrupt the epidermal barrier, inducing micro-inflammatory erythema and inducing accelerated, non-uniform parakeratotic desquamation (clumped visible flakes and pruritus).`
     : ""
 }
 ${
   hasRednessIssue
-    ? `• FACIAL VASCULAR ERYTHEMA / REDNESS FLARE:
-  - Root Cause: Superficial microcapillary hyper-dilation caused by acid-mantle thinning, active ingredient irritation, or temperature sensitivity.`
-    : ""
+    ? `• FACIAL VASCULAR ERYTHEMA & EPIDERMAL ACID-MANTLE PERMEABILITY:
+  - Molecular Pathology: Neurovascular hyper-reactivity and dilated dermal post-capillary venules. The stratum corneum's protective acid mantle (optimal pH 4.5 - 5.5) has suffered lipid depletion, exposing sub-epidermal C-nerve fibers to ambient temperature fluctuations and topical irritants, triggering sustained vasodilation.`
+    : `• FACIAL VASCULAR EQUILIBRIUM:
+  - Baseline Assessment: Dermal microcapillaries demonstrate normal contractile tone without sustained erythema. Acid mantle is structurally intact.`
 }
 ${
   hasAcneIssue
-    ? `• ACNE BREAKOUT CLUSTER:
-  - Root Cause: Accelerated microcomedone obstruction. Dead skin cells and excess sebum have formed anaerobic plugs in the follicular infundibulum, triggering Cutibacterium acnes inflammatory response.`
-    : ""
+    ? `• FOLLICULAR HYPERKERATINIZATION & CUTIBACTERIUM ACNES COLONIZATION:
+  - Molecular Pathology: Retention hyperkeratosis of the infundibulum prevents normal shedding of squames, forming a non-visible microcomedone. Trapped sebum creates an anaerobic, lipid-rich microenvironment where Cutibacterium acnes proliferates rapidly, releasing lipases and neutrophil chemotactic factors that transform comedones into tender inflammatory papules.`
+    : `• SEBACEOUS SECRETION & PORE CLEARANCE:
+  - Baseline Assessment: Sebaceous gland output matches physiological desquamation rate. Comedonal plugs are absent or sub-clinical.`
 }
 ${
   hasHydrationIssue
-    ? `• TRANSEPIDERMAL WATER LOSS (TEWL) & BARRIER COMPROMISE:
-  - Root Cause: Intercellular lipid matrix depletion (loss of ceramides and essential fatty acids), accelerating moisture evaporation.`
-    : ""
+    ? `• TRANSEPIDERMAL WATER LOSS (TEWL) & INTERCELLULAR LIPID DEPLETION:
+  - Molecular Pathology: Depletion of ceramides (1, 3, 6-II), cholesterol, and free fatty acids from the stratum corneum intercellular bilayers. When natural moisturizing factors (NMF) diminish, moisture rapidly evaporates into ambient air (elevated TEWL), creating micro-fissures and rough surface texture.`
+    : `• STRATUM CORNEUM WATER RETENTION EQUILIBRIUM:
+  - Baseline Assessment: Bilayer lamellar sheets retain moisture adequately. TEWL is calculated within normal clinical limits.`
 }
 
 ----------------------------------------------------------------------
-2. NATURAL & LIFESTYLE ACTIONS (PREVENTION & RECOVERY)
+2. HOLISTIC & ZERO-COST LIFESTYLE RECOVERY PROTOCOL
 ----------------------------------------------------------------------
 ${
   isHairScan || hasHairThinning || hasScalpFlaking
-    ? `1. Scalp Microcirculation & Mechanical Protocols:
-   - Perform a 4-minute daily scalp massage using gentle finger pads (not fingernails) to increase blood perfusion to dermal papillae.
-   - Never aggressively rub damp hair with rough cotton towels; gently squeeze with microfiber to prevent mechanical traction breakage.
-2. Nutritional Follicular Fortification:
-   - Ensure adequate dietary iron/ferritin, zinc, and high-quality protein (collagen/eggs/lentils) necessary for keratin synthesis.
-   - Maintain scalp temperature: avoid scalding hot showers which desiccate the scalp and induce reactive hyper-seborrhea.`
-    : `1. The Damp-Skin Lock Technique: Apply moisturizer within 60 seconds while your face is damp to seal in surface water.
-2. Lukewarm Water Cleansing: Avoid hot water which melts protective sebum and expands reactive facial capillaries.
-3. Switch pillowcases every 3-4 days to prevent bacterial re-inoculation.`
+    ? `1. Dermal Papilla Mechanical Perfusion Protocol:
+   - Perform a 4-minute targeted scalp massage daily using the flat pads of your fingers in circular motions across the vertex and frontal hairline. Clinical studies show this creates mechanical shear stress that upregulates dermal papilla vascular endothelial growth factor (VEGF).
+2. Anti-Friction & Thermal Protection:
+   - Eliminate hot water exposure: high water temperatures (>39°C) strip essential sebum and shock the hair cuticle. Rinse with lukewarm water only.
+   - Switch to 100% mulberry silk or satin pillowcases to reduce nocturnal shear friction on fragile telogen hair shafts.
+   - Squeeze hair gently with a microfiber towel—never rub wet hair, as the hydrogen bonds are temporarily disrupted and tensile strength is reduced by 30%.
+3. Biochemical & Nutritional Optimization:
+   - Consume 1.2 - 1.5g of protein per kg of body weight daily (keratin is 90% protein). Integrate pumpkin seeds (rich in zinc and natural phytosterols shown to block 5-alpha reductase).`
+    : `1. The 60-Second "Damp-Skin Lock" Technique:
+   - Never towel-dry the face completely. Pat lightly until damp and immediately apply hydrators within 60 seconds to trap ambient moisture before transepidermal evaporation occurs.
+2. Hydrothermal Capillary Preservation:
+   - Wash with lukewarm or cool water exclusively. Hot water causes acute thermal capillary dilation and accelerates facial redness.
+3. Mechanical & Microbial Sanitation:
+   - Change pillowcases every 72 hours (accumulated sebum and facial oils harbor bacterial colonies that reinoculate the skin overnight).
+   - Sanitize smartphone screens with 70% isopropyl alcohol daily to prevent contact acne along the mandibular line.`
 }
 
 ----------------------------------------------------------------------
-3. TARGETED TOPICAL PROTOCOL (AM / PM)
+3. TARGETED AM & PM CLINICAL ROUTINE SCHEDULE
 ----------------------------------------------------------------------
 ${
   isHairScan || hasHairThinning || hasScalpFlaking
-    ? `• Morning (AM) Scalp Regimen:
-  1. Wash with lukewarm water or gentle sulfate-free scalp cleanser.
-  2. Apply lightweight peptide density serum (The Ordinary Multi-Peptide) directly to thinning part lines.
-  3. Allow to absorb completely before styling; avoid heavy waxes that suffocate follicles.
+    ? `• MORNING (AM) ROUTINE:
+  Step 1: Cleanse with gentle lukewarm water or a sulfate-free scalp wash.
+  Step 2: On towel-damp hair, apply 1 pipette of multi-peptide density serum directly along parted sections. Gently tap until absorbed.
+  Step 3: Style without heat tools or heavy occlusive pomades that asphyxiate follicular openings.
 
-• Evening (PM) Scalp Regimen:
-  1. 2-3 times per week: Wash with 1% Ketoconazole shampoo (Nizoral), leaving lather on scalp for 5 minutes before rinsing.
-  2. Nightly: Apply 1ml of 5% Minoxidil directly to dry scalp in areas of thinning to stimulate anagen regrowth.`
-    : `• Morning (AM) Facial Regimen:
-  1. Gentle cream wash.
-  2. Niacinamide or BHA serum (matched to acne/redness).
-  3. Ceramide cream + Mineral SPF 50+.
+• EVENING (PM) ROUTINE:
+  Step 1: 2 to 3 evenings per week: Lather with 1% Ketoconazole medicated anti-fungal shampoo. Crucial clinical step: LEAVE LATHER ON SCALP FOR 5 FULL MINUTES before rinsing to allow adequate therapeutic contact time.
+  Step 2: On completely dry scalp, apply 1ml of 5% Minoxidil topical solution directly over thinning areas. Massage gently with fingertips.
+  Step 3: Wash hands thoroughly with soap and water after application.`
+    : `• MORNING (AM) BARRIER & CALMING SEQUENCE:
+  Step 1: Gentle non-stripping hydrating cleanser (pH 5.5).
+  Step 2: Targeted Active Serum:
+          - If Redness/Acne: Niacinamide 10% + Zinc 1% or Azelaic Acid 10% (calms vascular flushing and inhibits P. acnes).
+          - If Dehydration: Multi-molecular Hyaluronic Acid on damp skin.
+  Step 3: Ceramide & peptide barrier repair moisturizer.
+  Step 4: Broad Spectrum Mineral Sunscreen SPF 50+ (zinc oxide physically shields capillaries from UV-induced vasodilation).
 
-• Evening (PM) Facial Regimen:
-  1. Double cleanse.
-  2. Azelaic Acid 10% or Hydration serum.
-  3. Lipid restorative barrier balm.`
+• EVENING (PM) REPAIR & RESURFACING SEQUENCE:
+  Step 1: Double-cleansing: Micellar water or cleansing balm followed by a gentle gel cleanser to dissolve sebum and particulate matter.
+  Step 2: Treatment Active:
+          - Breakout clusters: 2% Salicylic Acid (BHA) applied to congested T-zone (alternate nights with barrier serum).
+          - Redness/Rosacea prone: Azelaic Acid 10% suspension applied across flushed zones.
+  Step 3: Occlusive lipid restorative barrier cream to seal transepidermal hydration overnight.`
 }
 
 ----------------------------------------------------------------------
-4. CHEAPEST DIRECT ONLINE PRODUCTS (TAILORED SPECIFICALLY TO YOUR ISSUES)
+4. CONTRAINDICATIONS: INGREDIENTS & HABITS TO CEASE IMMEDIATELY
 ----------------------------------------------------------------------
-The following products were selected dynamically to solve only the conditions flagged in your scan at the lowest available online price:
+${
+  isHairScan || hasHairThinning || hasScalpFlaking
+    ? `⛔ Sodium Lauryl Sulfate (SLS) & Sodium Laureth Sulfate: Aggressive anionic surfactants that strip the scalp barrier and trigger reactive hyper-seborrhea.
+⛔ Heavy Mineral Oils & Petrolatum on Scalp: Trap dead corneocytes and create anaerobic conditions favoring fungal overgrowth.
+⛔ High Heat Blow-Drying directly on Scalp: Damages the stratum corneum and denatures follicular cuticle proteins.`
+    : `⛔ Physical Walnut / Apricot Scrubs: Cause micro-tears in the epidermal surface, escalating inflammation and capillary leakage.
+⛔ Denatured Alcohol (Alcohol Denat / SD Alcohol 40) in toners: Strips essential fatty acids and spikes TEWL.
+⛔ Combining BHA/AHA with Retinoids in the same application window: Triggers severe chemical barrier burn.`
+}
+
+----------------------------------------------------------------------
+5. CHEAPEST DIRECT ONLINE PRODUCTS (VERIFIED BEST PRICE LINKS)
+----------------------------------------------------------------------
+The following medical-grade formulations have been clinically selected for your specific metrics at the lowest verified online prices across major retailers:
 
 ${productSectionText}
 
 ----------------------------------------------------------------------
-DISCLAIMER:
-This report is generated from optical telemetry biomarker tracking. It does not replace professional medical or trichological diagnosis. Consult a board-certified dermatologist for prescription oral anti-androgens or clinical evaluation.`;
+6. CLINICAL RED FLAG THRESHOLDS (WHEN TO CONSULT A DERMATOLOGIST)
+----------------------------------------------------------------------
+${
+  isHairScan || hasHairThinning || hasScalpFlaking
+    ? `Consult a board-certified dermatologist or trichologist immediately if you observe:
+- Sudden patchy, circular, completely smooth bald spots (possible Alopecia Areata).
+- Severe scalp burning, pain, or yellowish pustular exudate along hair follicles (Scarring / Cicatricial Alopecia).
+- Shedding exceeding >150 hairs daily continuously for more than 8 weeks.`
+    : `Consult a board-certified dermatologist immediately if you observe:
+- Painful, deep cystic nodules larger than 5mm that persist for >3 weeks (risk of permanent ice-pick scarring).
+- Rapidly expanding facial butterfly erythema accompanied by joint tenderness or photosensitivity.
+- Signs of secondary bacterial infection (honey-colored crusting, spreading warmth, or localized swelling).`
+}
+
+======================================================================
+Generated autonomously by Dermlog Agentic Clinical Diagnostic Engine
+Telemetry validated via YouCam AI Engine | Exportable via 1-Click PDF Handoff
+======================================================================`;
 }

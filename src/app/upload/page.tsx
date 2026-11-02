@@ -9,33 +9,40 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
-  Sparkle,
-  Sparkles as HairIcon,
+  Images,
+  X,
 } from "lucide-react";
 import Link from "next/link";
+import { ClinicalReportViewer } from "@/components/ClinicalReportViewer";
 
 export default function UploadScanPage() {
   const [scanType, setScanType] = useState<"facial" | "scalp_hair">("facial");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArr = Array.from(e.target.files);
+      setSelectedFiles((prev) => [...prev, ...filesArr]);
+      const newUrls = filesArr.map((f) => URL.createObjectURL(f));
+      setPreviewUrls((prev) => [...prev, ...newUrls]);
       setResult(null);
       setError(null);
     }
   };
 
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) {
-      setError("Please select an image photo first.");
+    if (selectedFiles.length === 0) {
+      setError("Please select at least one photo.");
       return;
     }
 
@@ -45,7 +52,9 @@ export default function UploadScanPage() {
 
     try {
       const formData = new FormData();
-      formData.append("image", selectedFile);
+      selectedFiles.forEach((file) => {
+        formData.append("images", file);
+      });
       formData.append("scanType", scanType);
 
       const res = await fetch("/api/scan", {
@@ -55,7 +64,7 @@ export default function UploadScanPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to process scan");
+        throw new Error(data.error || "Failed to process scans");
       }
 
       setResult(data);
@@ -75,10 +84,10 @@ export default function UploadScanPage() {
           Skin & Hair Follicular Telemetry
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Capture & Analyze Weekly Scan
+          Batch Upload & Telemetry Analysis
         </h1>
         <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-          Upload your weekly facial selfie or scalp/hair parting photo. The AI pipeline quantifies biomarkers, checks rolling deltas for inflection patterns, and generates targeted solutions with the cheapest direct buy links.
+          Upload <strong>one or multiple photos at once</strong> (e.g. photos from consecutive weeks). Dermlog extracts biometric scores for each image, computes the week-over-week deltas, and synthesizes clinical handoffs with direct product links.
         </p>
       </div>
 
@@ -120,68 +129,80 @@ export default function UploadScanPage() {
         <div className="p-8 rounded-3xl glass-panel space-y-6">
           <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
             <span className="text-sm font-semibold text-white flex items-center gap-2">
-              <Camera className="w-4 h-4 text-teal-400" />
-              {scanType === "facial" ? "Facial Photograph" : "Scalp / Hair Parting Photograph"}
+              <Images className="w-4 h-4 text-teal-400" />
+              Upload Photos ({selectedFiles.length} selected)
             </span>
-            <span className="text-xs text-slate-400">Natural / Good Lighting</span>
+            <span className="text-xs text-slate-400 font-medium">Multiple files supported</span>
           </div>
 
           {/* Upload Dropzone */}
           <div className="relative border-2 border-dashed border-white/10 hover:border-teal-500/50 rounded-2xl p-8 text-center transition-all bg-black/20 cursor-pointer group">
             <input
               type="file"
+              multiple
               accept="image/*"
-              onChange={handleFileChange}
+              onChange={handleFilesChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            {previewUrl ? (
-              <div className="flex flex-col items-center">
-                <img
-                  src={previewUrl}
-                  alt="Scan Preview"
-                  className="w-52 h-52 object-cover rounded-2xl border-2 border-teal-500/30 shadow-2xl mb-3"
-                />
-                <span className="text-xs font-semibold text-teal-300">
-                  {selectedFile?.name} (Click or drop another to replace)
-                </span>
+            <div className="space-y-3 py-6">
+              <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-teal-400 group-hover:scale-110 transition-transform">
+                <Upload className="w-7 h-7" />
               </div>
-            ) : (
-              <div className="space-y-3 py-8">
-                <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-teal-400 group-hover:scale-110 transition-transform">
-                  <Upload className="w-7 h-7" />
+              <div>
+                <div className="text-sm font-semibold text-slate-200">
+                  Click or drag-and-drop to add one or multiple photos
                 </div>
-                <div>
-                  <div className="text-sm font-semibold text-slate-200">
-                    {scanType === "facial"
-                      ? "Click to browse or drop your facial selfie here"
-                      : "Click to browse or drop your scalp parting or crown photo"}
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    Accepts PNG, JPG, JPEG, WebP
-                  </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Hold Ctrl / Shift to select multiple photos at once (PNG, JPG, WebP)
                 </div>
               </div>
-            )}
+            </div>
           </div>
+
+          {/* Multi-Image Preview Grid */}
+          {previewUrls.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="text-xs font-semibold text-slate-300">
+                Selected Images ({previewUrls.length}):
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {previewUrls.map((url, idx) => (
+                  <div key={idx} className="relative group rounded-xl overflow-hidden border border-white/10 aspect-square">
+                    <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-lg hover:bg-rose-500 transition-colors z-20"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="absolute bottom-1 left-1 px-2 py-0.5 rounded bg-black/70 text-[10px] text-teal-300 font-mono">
+                      Photo #{idx + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading || !selectedFile}
+          disabled={loading || selectedFiles.length === 0}
           className="w-full py-4 rounded-2xl btn-primary text-sm font-bold flex items-center justify-center gap-2 shadow-xl disabled:opacity-50"
         >
           {loading ? (
             <>
               <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-              Analyzing {scanType === "facial" ? "Facial Skin" : "Scalp & Hair"} Telemetry...
+              Processing {selectedFiles.length} Photos & Telemetry Timeline...
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              {!selectedFile
-                ? `Select a ${scanType === "facial" ? "face" : "hair/scalp"} photo to begin`
-                : `Run Weekly ${scanType === "facial" ? "Skin" : "Hair"} Scan & Trigger Agent`}
+              {selectedFiles.length === 0
+                ? "Select one or multiple photos to begin"
+                : `Analyze ${selectedFiles.length} Photo${selectedFiles.length > 1 ? "s" : ""} & Trigger Telemetry Agent`}
             </>
           )}
         </button>
@@ -201,18 +222,16 @@ export default function UploadScanPage() {
           <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
             <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
               <CheckCircle2 className="w-5 h-5" />
-              {result.scan?.scanType === "scalp_hair" ? "Hair & Scalp Telemetry Logged" : "Facial Telemetry Logged"}
+              {result.totalUploaded} {result.totalUploaded > 1 ? "Scans" : "Scan"} Successfully Ingested
             </div>
             <span className="text-xs text-slate-400 font-mono">
-              ID: {result.scan?.id?.slice(0, 8)}...
+              Batch: {result.totalUploaded} Scans Processed
             </span>
           </div>
 
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              {result.scan?.scanType === "scalp_hair"
-                ? "Trichological Follicular Metrics"
-                : "Optical Telemetry Scores (YouCam AI)"}
+              Latest Extracted Biometrics (YouCam AI Engine)
             </div>
 
             {result.scan?.scanType === "scalp_hair" ? (
@@ -297,20 +316,23 @@ export default function UploadScanPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-teal-200 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-teal-300" />
-                  Clinical Action Plan & Cheapest Treatments Compiled
+                  Clinical Action Plan & Direct Product Links Compiled
                 </span>
                 <span className="text-xs text-teal-400/80">
                   {new Date(result.report.createdAt).toLocaleTimeString()}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/50 p-4 rounded-xl border border-white/[0.06]">
-                {result.report.summaryText}
-              </p>
 
-              <div className="flex justify-end pt-1">
+              {/* Dynamic Styled Clinical Dossier */}
+              <ClinicalReportViewer reportText={result.report.summaryText} />
+
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[11px] text-teal-400 font-medium">
+                  Click the glowing buy buttons inside the dossier to access lowest verified prices.
+                </span>
                 <Link
                   href="/"
-                  className="px-5 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center gap-2 shadow-lg"
                 >
                   View on Dashboard & Download PDF <ArrowRight className="w-4 h-4" />
                 </Link>
