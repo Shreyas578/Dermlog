@@ -18,22 +18,33 @@ model User {
 }
 
 model Scan {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  imagePath  String
-  redness    Float
-  texture    Float
-  acneCount  Int
-  hydration  Float
-  darkSpots  Float
-  createdAt  DateTime @default(now())
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scanType        String   @default("facial") // "facial" | "scalp_hair"
+  imagePath       String
+  
+  // Facial metrics (0-100 or count)
+  redness         Float
+  texture         Float
+  acneCount       Int
+  hydration       Float
+  darkSpots       Float
+
+  // Hair & Scalp metrics (0-100 or count)
+  hairDensity     Float    @default(80.0) // 0 - 100 density index
+  scalpFlaking    Float    @default(15.0) // 0 - 100 dandruff / seborrheic index
+  hairThickness   Float    @default(75.0) // 0 - 100 follicle caliber / miniaturization
+  hairShedCount   Int      @default(30)   // estimated daily telogen shedding count
+
+  createdAt       DateTime @default(now())
 }
 
 model Event {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String   @default("skin") // "skin" | "hair_scalp"
   label     String
   note      String
   eventDate DateTime
@@ -44,8 +55,9 @@ model Report {
   id             String   @id @default(uuid())
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reportType     String   @default("comprehensive") // "facial" | "scalp_hair" | "comprehensive"
   summaryText    String
-  flaggedMetrics String // Stored as JSON string (e.g. '["redness trend", "breakout cluster"]')
+  flaggedMetrics String   // Stored as JSON string
   dateRangeStart DateTime
   dateRangeEnd   DateTime
   createdAt      DateTime @default(now())

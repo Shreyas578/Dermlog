@@ -9,17 +9,15 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
-  FileText,
-  SlidersHorizontal,
+  Sparkle,
+  Sparkles as HairIcon,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function UploadScanPage() {
+  const [scanType, setScanType] = useState<"facial" | "scalp_hair">("facial");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [presetMode, setPresetMode] = useState<
-    "normal" | "breakout_flare" | "dryness_flare" | "redness_flare"
-  >("breakout_flare");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,16 +34,19 @@ export default function UploadScanPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedFile) {
+      setError("Please select an image photo first.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
       const formData = new FormData();
-      if (selectedFile) {
-        formData.append("image", selectedFile);
-      }
-      formData.append("presetMode", presetMode);
+      formData.append("image", selectedFile);
+      formData.append("scanType", scanType);
 
       const res = await fetch("/api/scan", {
         method: "POST",
@@ -66,19 +67,53 @@ export default function UploadScanPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8">
       {/* Page Header */}
       <div className="space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
           <Camera className="w-3.5 h-3.5" />
-          Weekly Facial Optical Scan
+          Skin & Hair Follicular Telemetry
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Capture & Analyze Weekly Selfie
+          Capture & Analyze Weekly Scan
         </h1>
         <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-          Upload a clear facial photo. The YouCam Skin AI pipeline extracts erythema, texture, acne counts, hydration, and dark spots, while the local agent checks your rolling telemetry for inflection patterns.
+          Upload your weekly facial selfie or scalp/hair parting photo. The AI pipeline quantifies biomarkers, checks rolling deltas for inflection patterns, and generates targeted solutions with the cheapest direct buy links.
         </p>
+      </div>
+
+      {/* Target Focus Selector (Facial Skin vs Scalp & Hair) */}
+      <div className="p-2 rounded-2xl glass-panel grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setScanType("facial");
+            setResult(null);
+          }}
+          className={`py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+            scanType === "facial"
+              ? "btn-primary shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+          }`}
+        >
+          <Camera className="w-4 h-4" />
+          Facial Skin Scan
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setScanType("scalp_hair");
+            setResult(null);
+          }}
+          className={`py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+            scanType === "scalp_hair"
+              ? "btn-primary shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          Hair & Scalp Telemetry Scan
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -86,9 +121,9 @@ export default function UploadScanPage() {
           <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
             <span className="text-sm font-semibold text-white flex items-center gap-2">
               <Camera className="w-4 h-4 text-teal-400" />
-              Facial Photo
+              {scanType === "facial" ? "Facial Photograph" : "Scalp / Hair Parting Photograph"}
             </span>
-            <span className="text-xs text-slate-400">Natural / Standard Lighting</span>
+            <span className="text-xs text-slate-400">Natural / Good Lighting</span>
           </div>
 
           {/* Upload Dropzone */}
@@ -103,102 +138,50 @@ export default function UploadScanPage() {
               <div className="flex flex-col items-center">
                 <img
                   src={previewUrl}
-                  alt="Selfie Preview"
-                  className="w-48 h-48 object-cover rounded-2xl border-2 border-teal-500/30 shadow-2xl mb-3"
+                  alt="Scan Preview"
+                  className="w-52 h-52 object-cover rounded-2xl border-2 border-teal-500/30 shadow-2xl mb-3"
                 />
                 <span className="text-xs font-semibold text-teal-300">
-                  {selectedFile?.name || "Photo ready"} (Click or drop another to replace)
+                  {selectedFile?.name} (Click or drop another to replace)
                 </span>
               </div>
             ) : (
-              <div className="space-y-3 py-6">
+              <div className="space-y-3 py-8">
                 <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-teal-400 group-hover:scale-110 transition-transform">
                   <Upload className="w-7 h-7" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-slate-200">
-                    Click to browse or drop selfie photo here
+                    {scanType === "facial"
+                      ? "Click to browse or drop your facial selfie here"
+                      : "Click to browse or drop your scalp parting or crown photo"}
                   </div>
                   <div className="text-xs text-slate-500 mt-1">
-                    Accepts PNG, JPG, WebP
+                    Accepts PNG, JPG, JPEG, WebP
                   </div>
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Demo Scenario Tuning (For hackathon presentation) */}
-          <div className="pt-4 border-t border-white/[0.06] space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
-                Telemetry Scenario Simulation (Optional)
-              </span>
-              <span className="text-[11px] text-teal-400 font-medium">
-                Simulates real YouCam sensor outputs
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                {
-                  id: "breakout_flare",
-                  label: "Breakout Flare",
-                  desc: "Acne increases by 5",
-                  active: "ring-2 ring-orange-500 bg-orange-500/15 border-orange-500/40 text-orange-200",
-                },
-                {
-                  id: "redness_flare",
-                  label: "Redness Spike",
-                  desc: "Erythema rises >10%",
-                  active: "ring-2 ring-rose-500 bg-rose-500/15 border-rose-500/40 text-rose-200",
-                },
-                {
-                  id: "dryness_flare",
-                  label: "Hydration Drop",
-                  desc: "Barrier falls >15%",
-                  active: "ring-2 ring-sky-500 bg-sky-500/15 border-sky-500/40 text-sky-200",
-                },
-                {
-                  id: "normal",
-                  label: "Stable Skin",
-                  desc: "Baseline variance",
-                  active: "ring-2 ring-teal-500 bg-teal-500/15 border-teal-500/40 text-teal-200",
-                },
-              ].map((p) => (
-                <button
-                  type="button"
-                  key={p.id}
-                  onClick={() => setPresetMode(p.id as any)}
-                  className={`p-3.5 rounded-xl border text-left transition-all ${
-                    presetMode === p.id
-                      ? p.active
-                      : "border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/20"
-                  }`}
-                >
-                  <div className="text-xs font-bold text-white">{p.label}</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">{p.desc}</div>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !selectedFile}
           className="w-full py-4 rounded-2xl btn-primary text-sm font-bold flex items-center justify-center gap-2 shadow-xl disabled:opacity-50"
         >
           {loading ? (
             <>
               <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-              Analyzing with YouCam AI & Evaluating Inflections...
+              Analyzing {scanType === "facial" ? "Facial Skin" : "Scalp & Hair"} Telemetry...
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              Run Weekly Scan & Trigger Reasoning Agent
+              {!selectedFile
+                ? `Select a ${scanType === "facial" ? "face" : "hair/scalp"} photo to begin`
+                : `Run Weekly ${scanType === "facial" ? "Skin" : "Hair"} Scan & Trigger Agent`}
             </>
           )}
         </button>
@@ -218,7 +201,7 @@ export default function UploadScanPage() {
           <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
             <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
               <CheckCircle2 className="w-5 h-5" />
-              Scan Successfully Processed & Logged
+              {result.scan?.scanType === "scalp_hair" ? "Hair & Scalp Telemetry Logged" : "Facial Telemetry Logged"}
             </div>
             <span className="text-xs text-slate-400 font-mono">
               ID: {result.scan?.id?.slice(0, 8)}...
@@ -227,30 +210,58 @@ export default function UploadScanPage() {
 
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Telemetry Scores Extracted (YouCam AI)
+              {result.scan?.scanType === "scalp_hair"
+                ? "Trichological Follicular Metrics"
+                : "Optical Telemetry Scores (YouCam AI)"}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-              <div className="p-4 rounded-xl glass-card">
-                <div className="text-xs text-slate-400">Redness</div>
-                <div className="text-xl font-black text-rose-400 mt-1">{result.scan?.redness}</div>
+
+            {result.scan?.scanType === "scalp_hair" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Hair Density</div>
+                  <div className="text-xl font-black text-emerald-400 mt-1">{result.scan?.hairDensity}</div>
+                  <div className="text-[10px] text-slate-500">follicles/cm²</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Scalp Flaking</div>
+                  <div className="text-xl font-black text-amber-400 mt-1">{result.scan?.scalpFlaking}</div>
+                  <div className="text-[10px] text-slate-500">dandruff index</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Hair Thickness</div>
+                  <div className="text-xl font-black text-cyan-400 mt-1">{result.scan?.hairThickness}</div>
+                  <div className="text-[10px] text-slate-500">caliber index</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Est. Daily Shedding</div>
+                  <div className="text-xl font-black text-rose-400 mt-1">{result.scan?.hairShedCount}</div>
+                  <div className="text-[10px] text-slate-500">hairs / day</div>
+                </div>
               </div>
-              <div className="p-4 rounded-xl glass-card">
-                <div className="text-xs text-slate-400">Texture</div>
-                <div className="text-xl font-black text-amber-400 mt-1">{result.scan?.texture}</div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Redness</div>
+                  <div className="text-xl font-black text-rose-400 mt-1">{result.scan?.redness}</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Texture</div>
+                  <div className="text-xl font-black text-amber-400 mt-1">{result.scan?.texture}</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Acne Count</div>
+                  <div className="text-xl font-black text-orange-400 mt-1">{result.scan?.acneCount}</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Hydration</div>
+                  <div className="text-xl font-black text-sky-400 mt-1">{result.scan?.hydration}%</div>
+                </div>
+                <div className="p-4 rounded-xl glass-card">
+                  <div className="text-xs text-slate-400">Dark Spots</div>
+                  <div className="text-xl font-black text-purple-400 mt-1">{result.scan?.darkSpots}</div>
+                </div>
               </div>
-              <div className="p-4 rounded-xl glass-card">
-                <div className="text-xs text-slate-400">Acne Count</div>
-                <div className="text-xl font-black text-orange-400 mt-1">{result.scan?.acneCount}</div>
-              </div>
-              <div className="p-4 rounded-xl glass-card">
-                <div className="text-xs text-slate-400">Hydration</div>
-                <div className="text-xl font-black text-sky-400 mt-1">{result.scan?.hydration}%</div>
-              </div>
-              <div className="p-4 rounded-xl glass-card">
-                <div className="text-xs text-slate-400">Dark Spots</div>
-                <div className="text-xl font-black text-purple-400 mt-1">{result.scan?.darkSpots}</div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Inflection Evaluation Box */}
@@ -266,7 +277,7 @@ export default function UploadScanPage() {
                 </span>
               ) : (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold">
-                  WITHIN SAFE TOLERANCE
+                  WITHIN NORMAL BOUNDS
                 </span>
               )}
             </div>
@@ -286,7 +297,7 @@ export default function UploadScanPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-teal-200 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-teal-300" />
-                  Clinical Handoff Report Compiled
+                  Clinical Action Plan & Cheapest Treatments Compiled
                 </span>
                 <span className="text-xs text-teal-400/80">
                   {new Date(result.report.createdAt).toLocaleTimeString()}

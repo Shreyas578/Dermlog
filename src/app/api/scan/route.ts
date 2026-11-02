@@ -12,54 +12,58 @@ export async function POST(req: NextRequest) {
     const user = await getOrCreateDemoUser();
     const formData = await req.formData();
     const file = formData.get("image") as File | null;
-    const presetMode = formData.get("presetMode") as any; // normal, breakout_flare, dryness_flare, redness_flare
+    const scanType = (formData.get("scanType") as "facial" | "scalp_hair") || "facial";
 
-    let imageRelativePath = "/uploads/selfie-default.jpg";
-
-    if (file && file.size > 0) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const uploadsDir = path.join(process.cwd(), "public", "uploads");
-      await fs.mkdir(uploadsDir, { recursive: true });
-      const filename = `scan-${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
-      const filePath = path.join(uploadsDir, filename);
-      await fs.writeFile(filePath, buffer);
-      imageRelativePath = `/uploads/${filename}`;
+    if (!file || file.size === 0) {
+      return NextResponse.json({ error: "Please upload an image file." }, { status: 400 });
     }
 
-    // 1. Call YouCam Skin AI API (Mocked with demo-tuning presets)
-    const metrics = await callYouCamSkinAI(imageRelativePath, presetMode);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const filename = `scan-${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+    const filePath = path.join(uploadsDir, filename);
+    await fs.writeFile(filePath, buffer);
+    const imageRelativePath = `/uploads/${filename}`;
 
-    // 2. Save scan result to database
+    // 1. Call YouCam Skin & Scalp Telemetry API
+    const metrics = await callYouCamSkinAI(imageRelativePath, scanType);
+
+    // 2. Save scan result to Database
     const scan = await prisma.scan.create({
       data: {
         userId: user.id,
+        scanType,
         imagePath: imageRelativePath,
         redness: metrics.redness,
         texture: metrics.texture,
         acneCount: metrics.acne_count,
         hydration: metrics.hydration,
-        darkSpots: metrics.dark_spots,
+        darkSpots: metrics.darkSpots,
+        hairDensity: metrics.hairDensity,
+        scalpFlaking: metrics.scalpFlaking,
+        hairThickness: metrics.hairThickness,
+        hairShedCount: metrics.hairShedCount,
       },
     });
 
-    // 3. CORE AGENTIC FEATURE: Pull last 6 scans from database (newest first)
+    // 3. Pull user's last 6 scans
     const lastScansNewestFirst = await prisma.scan.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
       take: 6,
     });
 
-    // 4. Compute week-over-week deltas and check inflection rules
+    // 4. Compute week-over-week deltas & check skin/hair inflection rules
     const inflectionResult = detectInflections(lastScansNewestFirst);
 
     let createdReport = null;
 
-    // 5. If flags triggered, build prompt with events in window and generate AI summary
+    // 5. If flags triggered, generate tailored clinical report
     if (inflectionResult.hasFlag) {
       const earliestScan = lastScansNewestFirst[lastScansNewestFirst.length - 1];
       const latestScan = lastScansNewestFirst[0];
 
-      // Pull events within the telemetric window
       const eventsInWindow = await prisma.event.findMany({
         where: {
           userId: user.id,
@@ -71,7 +75,6 @@ export async function POST(req: NextRequest) {
         orderBy: { eventDate: "asc" },
       });
 
-      // Chronological order for AI reasoning context
       const chronologicalScans = [...lastScansNewestFirst].reverse();
 
       const summaryText = await generateClinicalSummary({
@@ -81,10 +84,10 @@ export async function POST(req: NextRequest) {
         eventsInWindow,
       });
 
-      // Save summary in reports table
       createdReport = await prisma.report.create({
         data: {
           userId: user.id,
+          reportType: scanType === "scalp_hair" ? "scalp_hair" : "facial",
           summaryText,
           flaggedMetrics: JSON.stringify(inflectionResult.flags),
           dateRangeStart: earliestScan.createdAt,

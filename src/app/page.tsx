@@ -27,7 +27,9 @@ import {
   Activity,
   Flame,
   Droplets,
-  Clock,
+  ShoppingBag,
+  ExternalLink,
+  ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 import html2canvas from "html2canvas";
@@ -153,6 +155,29 @@ export default function DashboardPage() {
 
   const latestScan = scans.length > 0 ? scans[scans.length - 1] : null;
 
+  // Utility to parse hyperlinks in markdown/text so users can click products
+  const renderFormattedSummary = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-cyan-400 underline font-semibold hover:text-cyan-300 inline-flex items-center gap-1 mx-1"
+          >
+            {part} <ExternalLink className="w-3 h-3 inline" />
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <div className="space-y-10">
       {/* Hero Welcome Banner */}
@@ -163,13 +188,13 @@ export default function DashboardPage() {
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
-              Autonomous Inflection Surveillance
+              Autonomous Inflection Surveillance & Clinical Treatment Engine
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
               Skin Health & Biomarker Trajectory
             </h1>
             <p className="text-sm sm:text-base text-slate-300 font-normal leading-relaxed">
-              Track weekly facial scans, correlate skincare interventions, and get AI-synthesized clinical handoffs the moment metric deviations trigger inflection rules.
+              Track weekly facial scans, identify root causes, and access comprehensive holistic + cosmetic routines with direct cheapest purchase links for every flagged problem.
             </p>
           </div>
 
@@ -202,8 +227,8 @@ export default function DashboardPage() {
               scale: "/100",
               icon: Flame,
               color: "text-rose-400",
-              badge: latestScan.redness > 25 ? "Elevated" : "Normal",
-              badgeColor: latestScan.redness > 25 ? "bg-rose-500/15 text-rose-300 border-rose-500/30" : "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+              badge: latestScan.redness > 24 ? "Elevated" : "Nominal",
+              badgeColor: latestScan.redness > 24 ? "bg-rose-500/15 text-rose-300 border-rose-500/30" : "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
             },
             {
               label: "Surface Texture",
@@ -220,8 +245,8 @@ export default function DashboardPage() {
               scale: " spots",
               icon: AlertCircle,
               color: "text-orange-400",
-              badge: latestScan.acneCount >= 5 ? "Cluster" : "Low",
-              badgeColor: latestScan.acneCount >= 5 ? "bg-orange-500/15 text-orange-300 border-orange-500/30" : "bg-teal-500/15 text-teal-300 border-teal-500/30",
+              badge: latestScan.acneCount >= 4 ? "Flare Alert" : "Controlled",
+              badgeColor: latestScan.acneCount >= 4 ? "bg-orange-500/15 text-orange-300 border-orange-500/30" : "bg-teal-500/15 text-teal-300 border-teal-500/30",
             },
             {
               label: "Skin Hydration",
@@ -229,8 +254,8 @@ export default function DashboardPage() {
               scale: "",
               icon: Droplets,
               color: "text-sky-400",
-              badge: latestScan.hydration < 50 ? "Depleted" : "Optimal",
-              badgeColor: latestScan.hydration < 50 ? "bg-sky-500/15 text-sky-300 border-sky-500/30" : "bg-teal-500/15 text-teal-300 border-teal-500/30",
+              badge: latestScan.hydration < 52 ? "Depleted" : "Optimal",
+              badgeColor: latestScan.hydration < 52 ? "bg-sky-500/15 text-sky-300 border-sky-500/30" : "bg-teal-500/15 text-teal-300 border-teal-500/30",
             },
             {
               label: "Hyperpigmentation",
@@ -271,7 +296,7 @@ export default function DashboardPage() {
           </div>
           <h3 className="text-base font-bold text-white">No scans recorded yet</h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto">
-            Upload your first weekly selfie to establish your skin health baseline and activate the longitudinal tracking chart.
+            Upload your weekly selfie to establish your baseline and generate your personalized clinical action plan.
           </p>
           <div className="pt-2">
             <Link
@@ -452,10 +477,10 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <FileText className="w-5 h-5 text-teal-400" />
-              Clinical Handoff Reports
+              Comprehensive Clinical Handoff & Treatment Reports
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Automated dossiers compiled by reasoning AI whenever inflection rules trigger
+              Root causes, holistic/natural lifestyle actions, cosmetic routines, and direct online cheapest buy links
             </p>
           </div>
           <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.08] text-slate-300">
@@ -467,7 +492,7 @@ export default function DashboardPage() {
           <div className="p-8 rounded-2xl glass-panel text-center text-slate-400 text-xs space-y-1">
             <p className="font-semibold text-slate-300">No reports generated yet</p>
             <p className="text-slate-500">
-              When weekly scans trigger inflection thresholds (redness trend, breakout cluster, or hydration drop), reports will automatically compile here.
+              When weekly scans trigger inflection thresholds (redness trend, breakout cluster, or hydration drop), comprehensive clinical handoffs and product recommendations will automatically compile here.
             </p>
           </div>
         ) : (
@@ -524,11 +549,11 @@ export default function DashboardPage() {
                       >
                         {isExpanded ? (
                           <>
-                            Hide Summary <ChevronUp className="w-3.5 h-3.5" />
+                            Hide Report <ChevronUp className="w-3.5 h-3.5" />
                           </>
                         ) : (
                           <>
-                            View Summary <ChevronDown className="w-3.5 h-3.5" />
+                            View Full Action Plan <ChevronDown className="w-3.5 h-3.5" />
                           </>
                         )}
                       </button>
@@ -537,12 +562,14 @@ export default function DashboardPage() {
 
                   {isExpanded && (
                     <div className="px-6 pb-6 pt-2 border-t border-white/[0.06] bg-black/30">
-                      <div className="p-5 rounded-xl bg-slate-950/80 border border-white/[0.08] text-xs text-slate-200 leading-relaxed font-mono whitespace-pre-wrap">
-                        {report.summaryText}
+                      <div className="p-6 rounded-2xl bg-[#080d16] border border-white/[0.08] text-xs text-slate-200 leading-relaxed font-mono whitespace-pre-wrap max-h-[600px] overflow-y-auto">
+                        {renderFormattedSummary(report.summaryText)}
                       </div>
-                      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
-                        <span>Model: Open-Source Clinical Reasoning (Llama 3.1 8B API)</span>
-                        <span>Dermatology Handoff Protocol</span>
+                      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="flex items-center gap-1.5 text-teal-400">
+                          <ShoppingBag className="w-3.5 h-3.5" /> Click any highlighted link to purchase at lowest online price
+                        </span>
+                        <span>Clinical AI Decision Support</span>
                       </div>
                     </div>
                   )}
